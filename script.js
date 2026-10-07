@@ -5,6 +5,7 @@ var Fantasycore = 0;
 
 
 var numQuestion = 0;
+var answeredQuestions = new Set();
 
 var result = document.getElementById("result");
 
@@ -18,6 +19,11 @@ var q2a2 = document.getElementById("q2a2");
 
 var q3a1 = document.getElementById("q3a1");
 var q3a2 = document.getElementById("q3a2");
+var questionGroups = [
+  [q1a1, q1a2],
+  [q2a1, q2a2],
+  [q3a1, q3a2]
+];
 
 
 q1a1.addEventListener("click", Romance);
@@ -33,29 +39,40 @@ restart.addEventListener("click", RestartQuiz);
 
 
 function Romance() {
-  Romancecore ++;
-  numQuestion ++;
-
-  console.log("numQuestion = " + numQuestion + " Romancecore = " + Romancecore);
-checkQuizCompletion();
-}
-
-function checkQuizCompletion() {
-  if (numQuestion >= 3) {
-    console.log("The quiz is done")
-      updateResult();
-  }
+  answerQuestion(this, "romance");
 }
 
 function Fantasy() {
-  Fantasycore += 1;
-  numQuestion += 1;
+  answerQuestion(this, "fantasy");
+}
 
-  console.log("numQuestion = " + numQuestion + " Fantasycore = " + Fantasycore);
+function answerQuestion(button, answer) {
+  var questionIndex = questionGroups.findIndex(function (group) {
+    return group.includes(button);
+  });
 
-  if (numQuestion == 3) {
-    console.log("The quiz is done")
-      updateResult();
+  if (questionIndex === -1 || answeredQuestions.has(questionIndex)) {
+    return;
+  }
+
+  answeredQuestions.add(questionIndex);
+  questionGroups[questionIndex].forEach(function (option) {
+    option.disabled = true;
+  });
+
+  if (answer === "romance") {
+    Romancecore += 1;
+  } else {
+    Fantasycore += 1;
+  }
+
+  numQuestion = answeredQuestions.size;
+  checkQuizCompletion();
+}
+
+function checkQuizCompletion() {
+  if (numQuestion === questionGroups.length) {
+    updateResult();
   }
 }
 
@@ -70,9 +87,14 @@ function updateResult() {
 }
 
 function RestartQuiz() {
-  RomanceCore = 0;
+  Romancecore = 0;
   Fantasycore = 0;
   numQuestion = 0;
-  result.innerHTML = "Your Result is...";
-  console.log("Quiz restarted. numQuestion = " + numQuestion + ", Romancecore = " + Romancecore + ", Fantasycore = " + Fantasycore);
+  answeredQuestions = new Set();
+  questionGroups.forEach(function (group) {
+    group.forEach(function (button) {
+      button.disabled = false;
+    });
+  });
+  result.textContent = "Your result is...";
     }
